@@ -12,3 +12,4 @@ knitr::opts_chunk$set(echo = TRUE)
 this is Maddog and Lesbos' website we made in R. We are two babes who love the QnD. 
 We are good at some stuff. 
 cute and cool. 
+And a little bit pscyho. But not too psycho. 
