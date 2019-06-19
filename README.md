@@ -1,4 +1,4 @@
 # QnDscience
 maddie+lesbos github open data science activity 
 
-snuggletime
+lesbos is the funnest ever. SO. MUCH. FUN.
