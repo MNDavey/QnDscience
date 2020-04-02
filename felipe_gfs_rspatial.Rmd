@@ -1,0 +1,61 @@
+---
+title: "felipe_gfs_rspatial_prac"
+author: "Leslie Roberson"
+date: "4/2/2020"
+output: html_document
+---
+
+## Day one, 2 April 2020
+
+First R session
+
+1. Make and format maps
+2. density maps
+3. extract data from a raster
+4. Combine and make calculations from multiple rasters                                                                                     
+## Assumptions
+we know what a CRS is, a projection is, how to prepare your files before an analysis
+*reprojecting data is better in GIS than in R
+
+So here he already prepared all the layers
+
+```{r setup, include=FALSE}
+
+```
+
+## types of data
+
+vector: c() means vector. a group of different elements
+dataframe: can have different columns of different types of elements
+list: collection of multiple objects that you can call independently 
+  (e.g multiple dataframes in a list, or a list of shapefiles, or list of rasters)
+
+## split function
+
+use this for large data, so you can apply a funciton to smaller bits of data
+
+```{split}
+
+data_sp <- split(data, data$spp_id) # will make a list, with one element for each of your spp_id
+
+## convert shapefile to dataframe
+map.df <- fortify(shapefile) # like making a sf objecti but simpler, just making a df from your shapefile
+
+list[1] # calls the first element of your list
+
+## or can only apply a funciton to certain elements of your list (eg certain species)
+allplots <- lapply(data_sp[1:3], create_maps, map.df. onlypoints = TRUE) # create_maps is Felipe's function
+
+```
+
+## piles of map
+
+```{stack}
+
+# stack to import a raster stack, which is layers of rasters (so layers of different values or variables grouped together into a raster)
+# different to a list of rasters - you'd use lapply for that. That's a collection of raster elements
+```
+
+## loops
+
+
