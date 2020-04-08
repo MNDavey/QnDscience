@@ -1,0 +1,119 @@
+---
+title: "felipe_gfs_rspatial_prac"
+author: "Leslie Roberson"
+date: "4/2/2020"
+output: html_document
+---
+
+## Day one, 2 April 2020
+
+First R session
+
+1. Make and format maps
+2. density maps
+3. extract data from a raster
+4. Combine and make calculations from multiple rasters                                                                                     
+## Assumptions
+we know what a CRS is, a projection is, how to prepare your files before an analysis
+*reprojecting data is better in GIS than in R
+
+So here he already prepared all the layers
+
+```{r setup, include=FALSE}
+
+```
+
+## types of data
+
+vector: c() means vector. a group of different elements
+dataframe: can have different columns of different types of elements
+list: collection of multiple objects that you can call independently 
+  (e.g multiple dataframes in a list, or a list of shapefiles, or list of rasters)
+
+## split function
+
+use this for large data, so you can apply a funciton to smaller bits of data
+
+```{split}
+
+data_sp <- split(data, data$spp_id) # will make a list, with one element for each of your spp_id
+
+## convert shapefile to dataframe
+map.df <- fortify(shapefile) # like making a sf objecti but simpler, just making a df from your shapefile
+
+list[1] # calls the first element of your list
+
+## or can only apply a funciton to certain elements of your list (eg certain species)
+allplots <- lapply(data_sp[1:3], create_maps, map.df. onlypoints = TRUE) # create_maps is Felipe's function
+
+```
+
+## piles of map
+
+```{stack}
+
+# stack to import a raster stack, which is layers of rasters (so layers of different values or variables grouped together into a raster)
+# different to a list of rasters - you'd use lapply for that. That's a collection of raster elements
+```
+
+## Day 2, 9 April 2020
+
+# Intro to Loops
+
+```{loops}
+
+paste()
+# when you want to concatenate numbers and letters into a sentence 
+print(paste("we have session at", 9))
+print(paste("we have session at", 10))
+print(paste("we have session at", 11))
+print(paste("we have session at", 12))
+# this is annoying to copy and paste the different sessions with different numbers
+
+## a loop is more efficient
+# make a sequence of numbers
+9:15
+# now, concatenate each number in the sequence to the sentence and print it
+for(hour in 9:15){
+  print(paste("we have session at", hour))
+}
+# if you remove print, nothing happens
+for(hour in 9:15){
+  paste("we have session at", hour)
+}
+# so oyu need to store your result somewhere - first you have to create an empty object to store your results
+
+# so here we create a list to store outputs (remember, a list is a list of objects, can be various types of objects)
+list_of_sentences <- list()
+for(hour in 9:15){
+  list_of_sentences <- paste("we have session at", hour)
+} # this overwrites each time and only stores the last sentence (with hour 15)
+
+# so tell it to record all the results for each hour using the index []
+list_of_sentences <- list()
+for(hour in 9:15){
+  list_of_sentences[[hour]] <- paste("we have session at", hour)
+} # resturns the position of the sentence within the list in [[]]
+list_of_sentences 
+
+list_of_sentences <- list(1,2,3,4) # create list with 4 elements
+# so you're telling it to store the results of your loop in those 4 positions
+
+# NULL elements still get stored in teh list (so hours 1-8) get stored as HNULL, and you end up with 15 objects in your list
+
+# so you can add things to your list at whatever position you want
+
+## often see this as i
+
+list_of_sentences <- list()
+for(i in 1:15){ # for i in 1:15, 
+  list_of_sentences[[i]] <- paste("we have session at", i) # do this loop and store it here
+} 
+list_of_sentences 
+
+Reduce(list_of_sentences) # one way to remove any elements in the list that don't have anthing in them
+
+```
+
+# spatial stuff 
+
