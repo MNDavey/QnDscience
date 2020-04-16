@@ -81,36 +81,52 @@ myExplLCC$elevation # just call that one raster layer
 
 myExplLCC$FPC[is.na(myExplLCC$FPC[])] <- 100 #not needed but I want to work with numeric values here
 
-FPC<- raster::extract(myExplLCC$FPC, LCC, cellnumbers=TRUE)#extract FPC values
-FPC<-as.data.frame(FPC)#convert to dataframe
-elevation<-raster::extract(myExplLCC$elevation,LCC, #extract elevation values
+FPC<- raster::extract(myExplLCC$FPC, LCC, cellnumbers=TRUE) #extract FPC values
+FPC_df <-as.data.frame(FPC) #convert to dataframe
+head(FPC_df) # starts bottom left to top right
+elevation <- raster::extract(myExplLCC$elevation,LCC, #extract elevation values
                            cellnumbers = TRUE) # give oyu the cell numbers of those values 
-elevation<-as.data.frame(elevation)
+elevation <- as.data.frame(elevation)
 
 # extract the coordinates for each cell
 coordinates_FPC<-as.data.frame(xyFromCell(myExplLCC$FPC,FPC[,1]))
 
+#<><><> # create  biplot that shows the association between temperature and elevation
 #create a data frame with the coordinates and the cell values from your raster
-toy_df<-data.frame(x=coordinates_FPC["x"],y=coordinates_FPC["y"],
+
+toy_df <- data.frame(x=coordinates_FPC["x"], y=coordinates_FPC["y"],
                    FPC=as.numeric(FPC$value),elevation=elevation$value)
 
 # Now let's add a column showing different associations between variables
 # Here, we will categorize areas based on the association between temperature
 # and elevation (high p- high e, high p low e, low p high e, low p low e)
 
+# create 4 categories
+
 #subset areas with low elevation (less than 100 masl)
-lowelev<-toy_df[which(toy_df$elevation<100),]
+lowelev <- toy_df[which(toy_df$elevation<100),] # everything loewr than 100m is "low elevation"
+# which function allows you to choose rows in a particular position based on the condition
+# could do this same thing:
+subset(toy_df, tot_df$elevation < 100)
+
 #subset areas with high elevation (more than 100 masl)
-highelev<-toy_df[which(toy_df$elevation>100),]
+highelev<-toy_df[which(toy_df$elevation>100),] # evertyhign before the comma is a row. Everything after is a col
+toy_df$elevation # makes a vactor when you extract all the rows in a col
+# square brackets makes a df
+
 # now classify FPC values as high or low (based on the median) in each subset of elevation
-lowelev$relationship<-with(lowelev,ifelse(FPC < median(toy_df$FPC), 1,2))
+lowelev$relationship <- with(lowelev,ifelse(FPC < median(toy_df$FPC), 1,2)) # adding a new col
+# if it's lower than the medium, assign a 1, if it's higher, assign 2
+# with just lets you assign whatever function (here ifelse) to the dataframe
 highelev$relationship<-with(highelev,ifelse(FPC < median(toy_df$FPC), 3,4))
+
 toy_df<-rbind(lowelev,highelev) #your dataframe should have now a column specifiying the categories of association
     
 head(toy_df)
 
 #How about if we want to have more control with the colours
-# to create a biplot showing a continous association?
+# to create a biplot showing a continous association? 
+# (basically making a color scale that doesn't quite exist in ggplot)
 
 # the trick is getting the colours exactly the way you want them
 # set the rgb values of three corners and then interpolate the colour grid
@@ -191,10 +207,13 @@ biplot_values<-function(data, # data frame, it must have at least two columns wi
 
 #run the function to create a column assigning colours to each cell (gradient based)
 toy_df<-biplot_values(toy_df,
+                      # set the extent:
                       -0.5, #the minimum value of the variable you want to plot on the x axis
                       100,#the minimum value of the variable you want to plot on the y axis
                       450,#the maximum value of the variable you want to plot on the x axis
                       200,#the maximum value of the variable you want to plot on the y axis
+                      # what colors you want: (values frmo teh RGB scale in color brewer) 
+                      # divide by 255 bc something about the function takes values 0 -1
                       c(253,184,99)/255,#vector of color that will be used in the bottom left corner of your plot
                       c(94, 60, 153)/255,#vector of color that will be used in the upper left corner of your plot
                       c(230,30,1)/255,#vector of color that will be used in the bottom right corner of your plot
@@ -210,15 +229,15 @@ toy_df<-biplot_values(toy_df,
 #between the two variables
 head(toy_df)
 
-assign_CRS<-CRS("+proj=aea +lat_1=-18 +lat_2=-36 +lat_0=0 +lon_0=132 +x_0=0 +y_0=0 +ellps=GRS80 +units=m
+assign_CRS <- CRS("+proj=aea +lat_1=-18 +lat_2=-36 +lat_0=0 +lon_0=132 +x_0=0 +y_0=0 +ellps=GRS80 +units=m
 +no_defs ")
 
 #Let's create a raster using the continuous gradient of colours from the data.frame using the function rasterFromXYZ
-association_raster_cont<-rasterFromXYZ(toy_df[c(1,2,7)])
-crs(association_raster_cont)<-assign_CRS
+association_raster_cont <- rasterFromXYZ(toy_df[c(1,2,7)])
+crs(association_raster_cont) <- assign_CRS
 
 #Let's create a raster using the four categories from the data.frame using the function rasterFromXYZ
-association_raster_cat<-rasterFromXYZ(toy_df[c(1,2,5)])
+association_raster_cat <- rasterFromXYZ(toy_df[c(1,2,5)])
 crs(association_raster_cat)<-assign_CRS
 
 #save your raster
@@ -231,7 +250,7 @@ crs(association_raster_cat)<-assign_CRS
 #below there are different examples of how to plot the association among variables:
 
 #sample some cells from your new dataframe to create a scatter plot
-#sample_df<-toy_df[sample(nrow(toy_df),10000),]
+#sample_df<-toy_df[sample(nrow(toy_df),10000),] # take random 10000 rows
 sample_df<-toy_df
 
 #simple plot elevation vs FPC (to get familiar with key components of ggplot)
@@ -257,7 +276,7 @@ ggplot(sample_df, aes(x=elevation,y=FPC)) +
 #to assign specific colurs
 
 p1<-ggplot(sample_df, aes(x=elevation,y=FPC)) +
-  geom_point(size=1, aes(colour= as.factor(sample_df$relationship)))+
+  geom_point(size=1, aes(colour= as.factor(sample_df$relationship))) +
   ggplot2::scale_color_manual(values = c('#fdb863','#e66101','#b2abd2','#5e3c99'), # check the links I sent to get these codes
                               name = "Association", labels = c("LL", "LH", "HL","HH"))+
   theme_classic()+
@@ -315,11 +334,13 @@ map_logan_cont<- rasterVis::levelplot(association_raster_cont,
                                  #),
                                  #scales=list(draw=TRUE),            # suppress axis labels
                                  col.regions=cols,                  # colour ramp
+                                 # assign the colors you created with your funciton earlier 
                                  at=seq(min(toy_df$rastvalue), max(toy_df$rastvalue), len=length(cols)))+
+  ## add a polygon layer on top of the raster (the border of hte logan city council)
           latticeExtra::layer(sp.polygons(LCC,col= "black"))+ #add border of LCC
           latticeExtra::layer({
             SpatialPolygonsRescale(layout.north.arrow(type = 2), #ADD NORTH ARROW
-                                   offset = c(2020000,-3170000),
+                                   offset = c(2020000,-3170000), # where it's located in the map (x,y) coords
                                    scale = 5000)
           })+
           latticeExtra::layer({ #ADD SCALE BAR

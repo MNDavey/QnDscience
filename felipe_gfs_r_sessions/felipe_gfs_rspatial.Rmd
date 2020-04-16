@@ -115,5 +115,7 @@ Reduce(list_of_sentences) # one way to remove any elements in the list that don'
 
 ```
 
-# spatial stuff 
+## Day 3
+
+
 
