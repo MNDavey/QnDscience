@@ -233,7 +233,8 @@ assign_CRS <- CRS("+proj=aea +lat_1=-18 +lat_2=-36 +lat_0=0 +lon_0=132 +x_0=0 +y
 +no_defs ")
 
 #Let's create a raster using the continuous gradient of colours from the data.frame using the function rasterFromXYZ
-association_raster_cont <- rasterFromXYZ(toy_df[c(1,2,7)])
+# here we're making a new easter that shows the relationship between elevation and forest cover
+association_raster_cont <- rasterFromXYZ(toy_df[c(1,2,7)]) # extracting columns 1, 2, and 7
 crs(association_raster_cont) <- assign_CRS
 
 #Let's create a raster using the four categories from the data.frame using the function rasterFromXYZ
@@ -336,7 +337,7 @@ map_logan_cont<- rasterVis::levelplot(association_raster_cont,
                                  col.regions=cols,                  # colour ramp
                                  # assign the colors you created with your funciton earlier 
                                  at=seq(min(toy_df$rastvalue), max(toy_df$rastvalue), len=length(cols)))+
-  ## add a polygon layer on top of the raster (the border of hte logan city council)
+  ## add a polygon layer on top of the raster (the border of hte logan city council) >> use latticeExtra for this
           latticeExtra::layer(sp.polygons(LCC,col= "black"))+ #add border of LCC
           latticeExtra::layer({
             SpatialPolygonsRescale(layout.north.arrow(type = 2), #ADD NORTH ARROW
