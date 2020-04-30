@@ -126,6 +126,42 @@ apply - for a dataframe
 When working with a big dataframe in R, the best thing you can do is split it
 
 
+## Day 5
+
+More on loops
+
+datacamp.com >> good tool for R and lots of other things
+
+```{day 5 loops}
+
+mydf <- data.frame(x = runif(100), y = rnorm()) # create vector of 100 random numbers with a normal distribution 
+
+# create a 3rd column contianing the sum of hte first 2 cols, by row
+for (i in 1:nrow(mydf)) { # all the rows in the df 
+  # length(mydf) is number of columns, or if you have list.files for a list of rasters, then length is what you need
+  mydf[i,3] <- mydf[i,1] + mydf[i,2]
+}
+
+## create a df, take the mean of hte 1st and 2nd cols but only for the last 50 row, and store the result in a vector
+
+mydf  <- data.frame(x = runif(200), min = 50, max = 500)
+
+myvector <- vector()
+for (i in (nrow(mydf)-50):nrow(mydf)){
+  myvector[i] <- mean(mydf[i,1] + mydf[i,2]) 
+}
+## Can do the same thing with apply. this function basically takes your dataframe and loops it. 
+# so don't put apply in a loop bc it's a loop within a loop
+
+apply(mydf, 1, sum) # apply to rows
+apply(mydf, 2, sum) # apply to columns 
+
+mydf$newcol <- apply(mydf, 1, sum) 
+mydf$newcol <- apply(mydf[1:50,], 1, sum) # apply to first 50 rows
+
+# EVERYTHING IN [] BEFORE COMMA IS ROWS, EVERYTHING AFTER IS COLUMNS
+
+```
 
 
 
