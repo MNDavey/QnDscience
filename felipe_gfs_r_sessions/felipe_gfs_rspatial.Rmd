@@ -164,4 +164,81 @@ mydf$newcol <- apply(mydf[1:50,], 1, sum) # apply to first 50 rows
 ```
 
 
+## Day 5? or 5?
+
+```{day 6}
+
+#<>><<> Loop exercise
+# create a list of datarfames of dim 3 cols and 50 rows
+# then apply a loop to extract the first and third columns with the last 20 rows
+
+mydf1 <- data.frame(replicate(3,sample(0:100,50,rep=TRUE)))
+## OR could do it this way:
+#mydf1 <- data.frame(x = runif(50), y = rnorm(100), z = rnorm(100))
+mydf2 <- data.frame(replicate(3,sample(101:1000,50,rep=TRUE)))
+mydf3 <- data.frame(replicate(3,sample(1001:2000,50,rep=TRUE)))
+
+mylistdfs <- list(mydf1, mydf2, mydf3)
+
+colstokeep <- list()
+for (i in 1:length(mylistdfs)){
+  colstokeep[[i]] <- mylistdfs[[i]][(nrow(mylistdfs[[i]])-20):nrow(mylistdfs[[i]]),c(1,3)]
+}
+
+
+#<><><>>< raster and shapefile exercise 
+
+myshape <- readOGR(dsn = ".", layer = "shape_layer")
+
+myshape@data # see attribute table
+
+library(NLMR)
+raster1 <- NLMR::nlm_fbn(33, 33, fract_dim = 1) # this foo ggregates cells with similar values 
+# 33, 33 are the dims
+
+raster::plot(raster1, terrain.colors(3))
+
+crs_myshape <- crs(myshape)
+extent(raster1) <- extent(myshape) # this is the max and min coord values
+## assign that extent to our raster
+projection(raster1) <- CRS(as.character(crs_myshape))
+plot(raster1)
+
+## save raster to your working directory
+writeRaster(raster1, "./YOURSUBFOLDER/raster1.tif")
+
+## call multiple rasters
+
+myrasters <- list.files("./", pattern = "*.tif", full.names = TRUE) # shows only the names as a vector
+## call them with a loop into a list of rasters
+listrasters <- list()
+for (i in 1:length(myrasters)){
+  listrasters[[i]] <- raster(myrasters[[i]])
+}
+# can also do this with lapply(myrasters)...
+
+
+## <><><><> now extract the cells inside each of the following polygons
+
+# first weire going to split our shapefile based on the unique identifier
+Colombia@data$ID <- 1:nrow(Colombia@data) # add unique identifier as a column
+# split shapefile based on that id column, which will make a list of shapefiles (each with one feature)
+split(Colombia, Colombia@data$ID) # name of shapefile, name of column with unique identifier
+# can also do this based on any col - can be categorical (would get a list of shapefiles for each category, each with a some features)
+
+## crop and make a raster
+
+target_raster <- raster1
+# crop that raster to extent of the polygon efature (in this case the feature called "depart)
+raster.polygon <- crop(target_raster, extent(depart), snap = "near")
+# crop to polygon edge and include the borders, and convert to raster
+raster.polygon <- rasterize(depart, raster.polygon, mask = TRUE)
+crs(raster.polygon) <- crs(depart)
+# extract cells
+cells <- rasterToPoints(raster.polygon)
+cells <- as.data.frame(cells) # all the cells from that polygon
+## add an id col to the df to keep track
+cells$departmentCol <- depart$NAME_1
+
+```
 
